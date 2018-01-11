@@ -7,10 +7,7 @@ import org.opencv.core.*;
 import org.opencv.imgproc.Imgproc;
 
 import javax.lang.model.type.ArrayType;
-import java.util.ArrayList;
-import java.util.Comparator;
-import java.util.List;
-import java.util.Vector;
+import java.util.*;
 
 import static java.lang.Math.PI;
 import static java.lang.Math.pow;
@@ -26,18 +23,27 @@ public class HandGesture {
         fontFace = FONT_HERSHEY_PLAIN;//temporary
     }
     public MyImage m;
-//    public Vector<Vector<Point>> contours;
-//    public Vector<Vector<Integer>> hullI;
-//    public Vector<Vector<Point>> hullP;
-   // public ArrayList<MatOfPoint> contours;
+//    public List<MatOfPoint> contours = new ArrayList<>(150);
+//    @NotNull
+//    public List<MatOfInt> hullI = new ArrayList<>(150);;
+//    @NotNull
+//    public List<MatOfPoint> hullP = new ArrayList<>(150);;
+//    public HashMap<Integer, MatOfPoint> contours = new HashMap<>();
+//    @NotNull
+//    public HashMap<Integer, MatOfInt> hullI = new HashMap<>();
+//    @NotNull
+//    public HashMap<Integer, MatOfPoint> hullP = new HashMap<>();;
     @NotNull
     public List<MatOfPoint> contours = new ArrayList<>(150);
     @NotNull
-    public List<MatOfInt> hullI = new ArrayList<>(150);;
+    public HashMap<Integer, MatOfInt> hullI = new HashMap<>();
     @NotNull
-    public List<MatOfPoint> hullP = new ArrayList<>(150);;
-    @NotNull
-    public List<MatOfInt4> defects = new ArrayList<>();; // mang 2 chieu vector 4 chieu
+    public HashMap<Integer, MatOfPoint> hullP = new HashMap<>();
+//    public List<MatOfInt> hullI = new ArrayList<>(150);;
+//    @NotNull
+//    public List<MatOfPoint> hullP = new ArrayList<>(150);;
+//    @NotNull
+    public HashMap<Integer, MatOfInt4> defects = new HashMap<>();
     @NotNull
     public Vector<Point> fingerTips = new Vector<>();
     @NotNull
@@ -87,11 +93,8 @@ public class HandGesture {
         return isHand;
 
     }
-    public void initVectors(){
-        hullI = new ArrayList<>();
-        hullP = new ArrayList<>();
-        defects = new ArrayList<>();
-    }
+
+
     public void getFingerNumber(@NotNull MyImage m){
         removeRedundantFingerTips();
         if(bRect.height > m.src.rows()/2 && nrNoFinger>12 && isHand ){
@@ -116,7 +119,7 @@ public class HandGesture {
     public void eleminateDefects(MyImage m){
         int tolerance =  (int)(bRect_height/5);
         float angleTol=95;
-        Vector<int[]> newDefects = new Vector<>();
+        Vector<double[]> newDefects = new Vector<>();
         int startidx, endidx, faridx;
         for(int i = 0; i < defects.get(cIdx).rows(); i++){
             double[] d = defects.get(cIdx).get(i, 0);
@@ -130,7 +133,7 @@ public class HandGesture {
                 if( ptEnd.y > (bRect.y + bRect.height -bRect.height/4 ) ){
                 }else if( ptStart.y > (bRect.y + bRect.height -bRect.height/4 ) ){
                 }else {
-                    int[] vector = new int[]{(int) d[0], (int) d[1], (int) d[2], (int) d[3]};
+                    double[] vector = new double[]{ d[0], d[1],  d[2], d[3]};
                     newDefects.add(vector);
                 }
             }
@@ -154,7 +157,8 @@ public class HandGesture {
         for(int i = 0; i < newDefects.size(); i++){
             temp.put(i, 0, newDefects.get(i));
         }
-        defects.set(cIdx, temp);
+        System.out.println(temp);
+        defects.put(cIdx, temp);
         removeRedundantEndPoints(newDefects, m);
 
     }
@@ -311,7 +315,7 @@ public class HandGesture {
         return d;
 
     }
-    private void removeRedundantEndPoints(Vector<int[]> newDefects, MyImage m){
+    private void removeRedundantEndPoints(Vector<double[]> newDefects, MyImage m){
         float avgX, avgY;
         float tolerance = (float)bRect_width/6;
         int startidx, endidx, faridx;

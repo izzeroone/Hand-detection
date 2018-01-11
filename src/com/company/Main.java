@@ -18,6 +18,7 @@ import java.awt.image.DataBufferByte;
 import java.io.ByteArrayInputStream;
 import java.io.InputStream;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Vector;
 
@@ -222,7 +223,7 @@ public class Main {
         for(int i=1;i<NSAMPLES;i++){
             Core.add(m.bw, m.bwList.get(i), m.bw);
         }
-       // medianBlur(m->bw, m->bw,7);
+        Imgproc.medianBlur(m.bw, m.bw,7);
     }
 
     void showWindows(@NotNull MyImage m){
@@ -257,7 +258,17 @@ public class Main {
     }
 
     void myDrawContours(@NotNull MyImage m, @NotNull HandGesture hg){
-        Imgproc.drawContours(m.src,hg.hullP,hg.cIdx,new Scalar(200,0,0),2, 8, new MatOfInt4(), 0, new Point());
+        List<MatOfPoint> hullP = new ArrayList<>();
+        for(int i = 0; i <= hg.cIdx; i++){
+            if(hg.hullP.containsKey(i))
+            {
+                hullP.add(hg.hullP.get(i));
+            } else {
+                hullP.add(new MatOfPoint());
+            }
+
+        }
+        Imgproc.drawContours(m.src,hullP,hg.cIdx,new Scalar(200,0,0),2, 8, new MatOfInt4(), 0, new Point());
         Imgproc.rectangle(m.src,hg.bRect.tl(),hg.bRect.br(),new Scalar(0,0,200));
 
         int fontFace = FONT_HERSHEY_PLAIN;
@@ -270,7 +281,17 @@ public class Main {
         Core.merge(channels, result);
 
         //	drawContours(result,hg->contours,hg->cIdx,cv::Scalar(0,200,0),6, 8, vector<Vec4i>(), 0, Point());
-        Imgproc.drawContours(result,hg.hullP,hg.cIdx,new Scalar(0,0,250),10, 8, new MatOfInt4(), 0, new Point());
+        List<MatOfPoint> hullP2 = new ArrayList<>();
+        for(int i = 0; i <= hg.cIdx; i++){
+            if(hg.hullP.containsKey(i))
+            {
+                hullP2.add(hg.hullP.get(i));
+            } else {
+                hullP2.add(new MatOfPoint());
+            }
+
+        }
+        Imgproc.drawContours(result, hullP2,hg.cIdx,new Scalar(0,0,250),10, 8, new MatOfInt4(), 0, new Point());
 
         int startidx, endidx, faridx;
         for(int i = 0; i < hg.defects.get(hg.cIdx).rows(); i++){
@@ -297,28 +318,25 @@ public class Main {
         m.bw.copyTo(aBw);
 
         Imgproc.findContours(aBw, hg.contours, hieratic, Imgproc.RETR_EXTERNAL, Imgproc.CHAIN_APPROX_NONE );
-
-        hg.initVectors();
         hg.cIdx = findBiggestContour(hg.contours);
-
+        hg.hullI.clear();
+        hg.hullP.clear();
 
 
         if(hg.cIdx!=-1) {
-            //check kiểm tra điều kiện null
-            if(hg.contours.size() <= hg.cIdx || hg.hullI.size() <= hg.cIdx  || hg.hullP.size() <= hg.cIdx )
-                return;
-
-//		approxPolyDP( Mat(hg->contours[hg->cIdx]), hg->contours[hg->cIdx], 11, true );
+            if(!hg.hullP.containsKey(hg.cIdx)){
+                hg.hullP.put(hg.cIdx, new MatOfPoint());
+                hg.hullI.put(hg.cIdx, new MatOfInt());
+                hg.defects.put(hg.cIdx, new MatOfInt4());
+            }
             hg.bRect = Imgproc.boundingRect(hg.contours.get(hg.cIdx));
-            //hg->bRect=boundingRect(Mat(hg->contours[hg->cIdx]));
             Imgproc.convexHull(hg.contours.get(hg.cIdx), hull, false);
-            hg.contours.set(hg.cIdx, convertIndexesToPoints(hg.contours.get(hg.cIdx), hull));
+            hg.hullP.put(hg.cIdx, convertIndexesToPoints(hg.contours.get(hg.cIdx), hull));
             convexHull(hg.contours.get(hg.cIdx), hg.hullI.get(hg.cIdx), false);
-            MatOfPoint2f hg2f = convertTo2f(hg.hullP.get(hg.cIdx));
+            MatOfPoint2f hg2f = new MatOfPoint2f(hg.hullP.get(hg.cIdx).toArray());
             approxPolyDP(hg2f, hg2f, 18, true);
-            MatOfPoint hg2i = convertTo2(hg2f);
-            hg.hullP.set(hg.cIdx, hg2i);
-            //approxPolyDP(Mat(hg -> hullP[hg -> cIdx]), hg -> hullP[hg -> cIdx], 18, true);
+            MatOfPoint hg2i = new MatOfPoint(hg2f.toArray());
+            hg.hullP.put(hg.cIdx, hg2i);
             if(hg.contours.get(hg.cIdx).rows() > 3){
                 convexityDefects(hg.contours.get(hg.cIdx), hg.hullI.get(hg.cIdx), hg.defects.get(hg.cIdx));
                 hg.eleminateDefects(m);
@@ -480,9 +498,12 @@ public class Main {
             for(int yy =0; yy < mat.cols(); yy++){
                 int[] data = new int[2];
                 mat.get(xx,yy,data);
-                result.put(xx, yy, data);
+                double[] data2 = new double[]{(float)(data[0]), (float)(data[1])};
+                System.out.println(data2);
+                result.put(xx, yy, data2);
             }
         }
+        System.out.println(result);
         return result;
     }
 
@@ -491,9 +512,11 @@ public class Main {
         MatOfPoint result = new MatOfPoint();
         for(int xx = 0; xx < mat.rows(); xx++){
             for(int yy =0; yy < mat.cols(); yy++){
-                int[] data = new int[2];
+                float[] data = new float[2];
                 mat.get(xx,yy,data);
-                result.put(xx, yy, data);
+
+                int[] data2 = new int[]{(int) data[0], (int) data[1]};
+                result.put(xx, yy, data2);
             }
         }
         return result;
