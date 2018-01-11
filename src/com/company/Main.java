@@ -1,6 +1,7 @@
 package com.company;
 
 import com.atul.JavaOpenCV.Imshow;
+import org.jetbrains.annotations.NotNull;
 import org.opencv.core.*;
 import org.opencv.core.Point;
 import org.opencv.imgproc.Imgproc;
@@ -30,18 +31,28 @@ public class Main {
     private final int NSAMPLES = 7;
     public int fontFace = FONT_HERSHEY_PLAIN;
     public int square_len;
+    @NotNull
     public int avgColor[][] = new int[NSAMPLES][3] ;
+    @NotNull
     public int c_lower[][] = new int[NSAMPLES][3];
+    @NotNull
     public int c_upper[][] = new int[NSAMPLES][3];
+    @NotNull
     public int avgBGR[] = new int[3];
     public int nefects;
     public int iSinceKFInit;
+    @NotNull
     public Point boundingDim = new Point();
+    @NotNull
     public VideoWriter out = new VideoWriter();
+    @NotNull
     public Mat edges = new Mat();
     public My_ROI roi1, roi2,roi3,roi4,roi5,roi6;
+    @NotNull
     public Vector<My_ROI> roi = new Vector<>();
+    @NotNull
     public Vector <KalmanFilter> kf = new Vector<>();
+    @NotNull
     public Vector <MatOfFloat> measurement = new Vector<>();
 
     public void init(MyImage m){
@@ -60,12 +71,12 @@ public class Main {
 //            bgr[i]=avgBGRMat.data[i];
 //        }
     }
-    void printText(Mat src, String text){
+    void printText(@NotNull Mat src, String text){
         int fontFace = FONT_HERSHEY_PLAIN;
         putText(src,text,new Point(src.cols()/2, src.rows()/10),fontFace, 1.2f,new Scalar(200,0,0),2);
     }
 
-    void waitForPalmCover(MyImage m){
+    void waitForPalmCover(@NotNull MyImage m){
         //Lấy frame tiếp theo
         m.cap.retrieve(m.src);
     
@@ -100,7 +111,7 @@ public class Main {
         }
     }
 
-    int getMedian(Vector<Integer> val){
+    int getMedian(@NotNull Vector<Integer> val){
         int median;
         int size = val.size();
         val.sort((a,b)-> a.compareTo(b));
@@ -112,7 +123,7 @@ public class Main {
         return median;
     }
 
-    void getAvgColor(MyImage m,My_ROI roi,int avg[]){
+    void getAvgColor(MyImage m, @NotNull My_ROI roi, int avg[]){
         Mat r = new Mat();
         roi.rot_ptr.copyTo(r);
         Vector<Integer>hm = new Vector<>();
@@ -131,7 +142,7 @@ public class Main {
         avg[1]=getMedian(sm);
         avg[2]=getMedian(lm);
     }
-    void average(MyImage m){
+    void average(@NotNull MyImage m){
         m.cap.retrieve(m.src);
         Core.flip(m.src, m.src, 1);
         for(int i=0;i<30;i++){
@@ -196,7 +207,7 @@ public class Main {
         }
     }
 
-    void produceBinaries(MyImage m){
+    void produceBinaries(@NotNull MyImage m){
         Scalar lowerBound;
         Scalar upperBound;
         Mat foo;
@@ -214,7 +225,7 @@ public class Main {
        // medianBlur(m->bw, m->bw,7);
     }
 
-    void showWindows(MyImage m){
+    void showWindows(@NotNull MyImage m){
         Imgproc.pyrDown(m.bw,m.bw);
         Imgproc.pyrDown(m.bw,m.bw);
         Rect rot = new Rect(new Point(3*m.src.cols() / 4,0), m.bw.size());
@@ -233,7 +244,7 @@ public class Main {
     }
 
 
-    int findBiggestContour(List<MatOfPoint> contours){
+    int findBiggestContour(@NotNull List<MatOfPoint> contours){
         int indexOfBiggestContour = -1;
         int sizeOfBiggestContour = 0;
         for (int i = 0; i < contours.size(); i++){
@@ -245,7 +256,7 @@ public class Main {
         return indexOfBiggestContour;
     }
 
-    void myDrawContours(MyImage m,HandGesture hg){
+    void myDrawContours(@NotNull MyImage m, @NotNull HandGesture hg){
         Imgproc.drawContours(m.src,hg.hullP,hg.cIdx,new Scalar(200,0,0),2, 8, new MatOfInt4(), 0, new Point());
         Imgproc.rectangle(m.src,hg.bRect.tl(),hg.bRect.br(),new Scalar(0,0,200));
 
@@ -278,7 +289,7 @@ public class Main {
 
     }
 
-    void makeContours(MyImage m, HandGesture hg){
+    void makeContours(@NotNull MyImage m, @NotNull HandGesture hg){
         Mat aBw = new Mat();
         Mat hieratic = new Mat();
         MatOfInt hull = new MatOfInt();
@@ -290,7 +301,13 @@ public class Main {
         hg.initVectors();
         hg.cIdx = findBiggestContour(hg.contours);
 
+
+
         if(hg.cIdx!=-1) {
+            //check kiểm tra điều kiện null
+            if(hg.contours.size() <= hg.cIdx || hg.hullI.size() <= hg.cIdx  || hg.hullP.size() <= hg.cIdx )
+                return;
+
 //		approxPolyDP( Mat(hg->contours[hg->cIdx]), hg->contours[hg->cIdx], 11, true );
             hg.bRect = Imgproc.boundingRect(hg.contours.get(hg.cIdx));
             //hg->bRect=boundingRect(Mat(hg->contours[hg->cIdx]));
@@ -360,6 +377,7 @@ public class Main {
         out.release();
         m.cap.release();
     }
+    @NotNull
     public static BufferedImage Mat2BufferedImage(Mat m){
 
         int type = BufferedImage.TYPE_BYTE_GRAY;
@@ -375,8 +393,9 @@ public class Main {
         return image;
 
     }
+    @NotNull
     private static JFrame jframe = new JFrame();
-    public static void displayImage(Image img2)
+    public static void displayImage(@NotNull Image img2)
     {
         //BufferedImage img=ImageIO.read(new File("/HelloOpenCV/lena.png"));
         ImageIcon icon=new ImageIcon(img2);
@@ -393,6 +412,7 @@ public class Main {
 
     }
     //waitkey
+    @NotNull
     private static int keyUserdata[] = new int[2];      // [0] = id [1] = keycode
 
     private static boolean isWaitKey = false;
@@ -438,6 +458,7 @@ public class Main {
     }
 
     //MatOfPoint to max of hull
+    @NotNull
     public static MatOfPoint convertIndexesToPoints(MatOfPoint contour, MatOfInt indexes) {
         int[] arrIndex = indexes.toArray();
         Point[] arrContour = contour.toArray();
@@ -452,6 +473,7 @@ public class Main {
         return hull;
     }
 
+    @NotNull
     public static MatOfPoint2f convertTo2f(MatOfPoint mat){
         MatOfPoint2f result = new MatOfPoint2f();
         for(int xx = 0; xx < mat.rows(); xx++){
@@ -464,6 +486,7 @@ public class Main {
         return result;
     }
 
+    @NotNull
     public static MatOfPoint convertTo2(MatOfPoint2f mat){
         MatOfPoint result = new MatOfPoint();
         for(int xx = 0; xx < mat.rows(); xx++){

@@ -2,6 +2,7 @@ package com.company;
 
 import com.sun.javafx.geom.Vec3f;
 import com.sun.javafx.geom.Vec4f;
+import org.jetbrains.annotations.NotNull;
 import org.opencv.core.*;
 import org.opencv.imgproc.Imgproc;
 
@@ -29,15 +30,21 @@ public class HandGesture {
 //    public Vector<Vector<Integer>> hullI;
 //    public Vector<Vector<Point>> hullP;
    // public ArrayList<MatOfPoint> contours;
-    public List<MatOfPoint> contours = new ArrayList<>();
-    public List<MatOfInt> hullI = new ArrayList<>();;
-    public List<MatOfPoint> hullP = new ArrayList<>();;
+    @NotNull
+    public List<MatOfPoint> contours = new ArrayList<>(150);
+    @NotNull
+    public List<MatOfInt> hullI = new ArrayList<>(150);;
+    @NotNull
+    public List<MatOfPoint> hullP = new ArrayList<>(150);;
+    @NotNull
     public List<MatOfInt4> defects = new ArrayList<>();; // mang 2 chieu vector 4 chieu
+    @NotNull
     public Vector<Point> fingerTips = new Vector<>();
+    @NotNull
     public Rect rect = new Rect();
     public int cIdx;
     public int frameNumber;
-    public void printGestureInfo(Mat src){
+    public void printGestureInfo(@NotNull Mat src){
         int fontFace = FONT_HERSHEY_PLAIN;
         Scalar fColor = new Scalar (245,200,200);
         int xpos= (int) (src.cols()/1.5);
@@ -59,7 +66,7 @@ public class HandGesture {
     }
     public int mostFrequentFingerNumber;
     public int nrOfDefects;
-    public Rect bRect;
+    public Rect bRect = new Rect();
     public double bRect_width;
     public double bRect_height;
     public boolean isHand;
@@ -85,7 +92,7 @@ public class HandGesture {
         hullP = new ArrayList<>();
         defects = new ArrayList<>();
     }
-    public void getFingerNumber(MyImage m){
+    public void getFingerNumber(@NotNull MyImage m){
         removeRedundantFingerTips();
         if(bRect.height > m.src.rows()/2 && nrNoFinger>12 && isHand ){
             numberColor=new Scalar(0,200,0);
@@ -151,10 +158,12 @@ public class HandGesture {
         removeRedundantEndPoints(newDefects, m);
 
     }
-    public void getFingerTips(MyImage m){
+    public void getFingerTips(@NotNull MyImage m){
         fingerTips.clear();
         int j=0;
         int startidx, endidx, faridx;
+        if(defects.get(cIdx) == null)
+            return;
         for(int i = 0; i < defects.get(cIdx).rows(); i++){
             double[] d = defects.get(cIdx).get(i, 0);
             startidx= (int) d[0];
@@ -178,7 +187,7 @@ public class HandGesture {
         }
 
     }
-    public void drawFingerTips(MyImage m){
+    public void drawFingerTips(@NotNull MyImage m){
         Point p;
         int k=0;
         for(int i=0;i<fingerTips.size();i++){
@@ -223,7 +232,7 @@ public class HandGesture {
 
 
     }
-    private float getAngle(Point s,Point f,Point e){
+    private float getAngle(@NotNull Point s, @NotNull Point f, @NotNull Point e){
         float l1 = distanceP2P(f,s);
         float l2 = distanceP2P(f,e);
         float dot= (float)((s.x-f.x)*(e.x-f.x) + (s.y-f.y)*(e.y-f.y));
@@ -232,7 +241,7 @@ public class HandGesture {
         return angle;
 
     }
-    private Vector<Integer> fingerNumbers;
+    private Vector<Integer> fingerNumbers = new Vector<>();
     private void analyzeContours(){
         bRect_width = bRect.width;
         bRect_height = bRect.height;
@@ -245,7 +254,7 @@ public class HandGesture {
     private void computeFingerNumber(){
         fingerNumbers.sort(new Comparator<Integer>() {
             @Override
-            public int compare(Integer lhs, Integer rhs) {
+            public int compare(@NotNull Integer lhs, @NotNull Integer rhs) {
                 return rhs.compareTo(lhs);
             }
         });
@@ -272,7 +281,7 @@ public class HandGesture {
     private void drawNewNumber(MyImage m){
 
     }
-    private void addNumberToImg(MyImage m){
+    private void addNumberToImg(@NotNull MyImage m){
         int xPos=10;
         int yPos=10;
         int offset=30;
@@ -289,7 +298,7 @@ public class HandGesture {
         }
 
     }
-    private Vector<Integer> numbers2Display;
+    private Vector<Integer> numbers2Display = new Vector<>();
     private void addFingerNumberToVector(){
         int i=fingerTips.size();
         fingerNumbers.add(i);
@@ -303,7 +312,6 @@ public class HandGesture {
 
     }
     private void removeRedundantEndPoints(Vector<int[]> newDefects, MyImage m){
-        Vec4f temp;
         float avgX, avgY;
         float tolerance = (float)bRect_width/6;
         int startidx, endidx, faridx;

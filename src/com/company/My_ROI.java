@@ -1,6 +1,7 @@
 package com.company;
 
 
+import org.jetbrains.annotations.NotNull;
 import org.opencv.core.Mat;
 import org.opencv.core.Point;
 import org.opencv.core.Rect;
@@ -21,12 +22,14 @@ public class My_ROI {
         Rect myRect = new Rect((int)u_corner.x, (int)u_corner.y, (int)(l_cornet.x - u_corner.x), (int)(l_cornet.y - u_corner.y));
         rot_ptr = src.submat(myRect);
     }
+    @NotNull
     public Point upper_corner = new Point();
+    @NotNull
     public Point lower_corner = new Point();
     public Mat rot_ptr = new Mat();
     public Scalar color;
     public int border_thickness;
-    public void draw_recangle(Mat src){
+    public void draw_recangle(@NotNull Mat src){
         Imgproc.rectangle(src, upper_corner, lower_corner, color, border_thickness);
     }
 
