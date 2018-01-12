@@ -104,7 +104,7 @@ public class Main {
                 //	imwrite("./images/waitforpalm1.jpg",m->src);
             }
 
-            displayImage(Mat2BufferedImage(m.src));
+            displayImage(m.src);
             out.write(m.src);
             //out << m->src;
             if (waitKey(30) >= 0) break;
@@ -157,7 +157,7 @@ public class Main {
             cvtColor(m.src,m.src,COL2ORIGCOL);
             String imgText= new String("Finding average color of hand");
             printText(m.src,imgText);
-            displayImage(Mat2BufferedImage(m.src));
+            displayImage(m.src);
             //if(waitKey(30) >= 0) break;
         }
     }
@@ -240,7 +240,7 @@ public class Main {
         result.copyTo(nresult);
 
         result.copyTo( m.src.submat(rot));
-        displayImage(Mat2BufferedImage(m.src));
+        displayImage(m.src);
 
     }
 
@@ -411,14 +411,29 @@ public class Main {
         return image;
 
     }
+
+
+
     @NotNull
-    private static JFrame jframe = new JFrame();
+    private static JPanel jpanel = new JPanel();
+    private static JFrame jframe = new JFrame(){
+        @Override
+        protected void frameInit() {
+            super.frameInit();
+            setLayout(new BorderLayout());
+        }
+    };
+    public static void displayImage(Mat src){
+        BufferedImage img = Mat2BufferedImage(src);
+        displayImage(img);
+        img.flush();
+    }
     public static void displayImage(@NotNull Image img2)
     {
         //BufferedImage img=ImageIO.read(new File("/HelloOpenCV/lena.png"));
         ImageIcon icon=new ImageIcon(img2);
 
-        jframe.setLayout(new FlowLayout());
+
         jframe.setSize(img2.getWidth(null)+50, img2.getHeight(null)+50);
         JLabel lbl=new JLabel();
         lbl.setIcon(icon);
