@@ -158,7 +158,7 @@ public class Main {
             String imgText= new String("Finding average color of hand");
             printText(m.src,imgText);
             displayImage(Mat2BufferedImage(m.src));
-            if(waitKey(30) >= 0) break;
+            //if(waitKey(30) >= 0) break;
         }
     }
 
@@ -375,7 +375,7 @@ public class Main {
         waitForPalmCover(m);
         average(m);
         initTrackbars();
-        for(;;){
+        while (true){
             hg.frameNumber++;
             m.cap.retrieve(m.src);
             Core.flip(m.src,m.src,1);
